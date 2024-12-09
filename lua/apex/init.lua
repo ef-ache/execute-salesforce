@@ -40,6 +40,8 @@ function M.show_result(result)
 		:find()
 end
 
-vim.api.nvim_create_user_command("ExecuteApex", M.execute_anonymous, {})
+function M.setup()
+	vim.api.nvim_create_user_command("ExecuteApex", M.execute_anonymous, { desc = "Execute Apex code" })
+end
 
 return M
