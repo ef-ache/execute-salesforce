@@ -19,6 +19,7 @@ function M.show_result(result)
 end
 
 function M.execute_apex(line1, line2)
+	print("starting executing apex")
 	local bufnr = vim.api.nvim_get_current_buf()
 	local lines = vim.api.nvim_buf_get_lines(bufnr, line1 - 1, line2, false)
 	if #lines == 0 then
