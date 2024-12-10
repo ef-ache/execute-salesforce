@@ -18,7 +18,7 @@ function M.show_result(result)
 	vim.api.nvim_open_win(buf, true, opts)
 end
 
-function M.execute_anonymous(line1, line2)
+function M.execute_apex(line1, line2)
 	local bufnr = vim.api.nvim_get_current_buf()
 	local lines = vim.api.nvim_buf_get_lines(bufnr, line1 - 1, line2, false)
 	if #lines == 0 then
@@ -41,13 +41,4 @@ function M.execute_anonymous(line1, line2)
 	else
 		print("Erreur lors de la lecture du résultat.")
 	end
-end
-
-function M.setup()
-	vim.api.nvim_create_user_command("Apex", function(opts)
-		M.execute_anonymous(opts.line1, opts.line2)
-	end, {
-		range = true, -- Autorise l'utilisation de plages
-		desc = "Exécute le code Apex sur la plage sélectionnée ou sur une ligne",
-	})
 end
