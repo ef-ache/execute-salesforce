@@ -20,7 +20,6 @@ end
 
 function M.execute_anonymous(line1, line2)
 	local bufnr = vim.api.nvim_get_current_buf()
-
 	local lines = vim.api.nvim_buf_get_lines(bufnr, line1 - 1, line2, false)
 	if #lines == 0 then
 		print("Aucun code à exécuter.")
@@ -28,13 +27,20 @@ function M.execute_anonymous(line1, line2)
 	end
 
 	local code = table.concat(lines, "\n")
-
 	local command = 'sfdx force:apex:execute --apexcode "' .. code:gsub('"', '\\"') .. '"'
-	local handle = io.popen(command)
+	local handle, err = io.popen(command, "r")
+	if not handle then
+		print("Erreur lors de l'exécution de la commande : " .. tostring(err))
+		return
+	end
 	local result = handle:read("*a")
 	handle:close()
 
-	M.show_result(result)
+	if result then
+		M.show_result(result)
+	else
+		print("Erreur lors de la lecture du résultat.")
+	end
 end
 
 function M.setup()
