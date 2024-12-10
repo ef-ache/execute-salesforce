@@ -44,7 +44,7 @@ function M.execute_anonymous(line1, line2)
 end
 
 function M.setup()
-	vim.api.nvim_create_user_command("ExecuteApex", function(opts)
+	vim.api.nvim_create_user_command("Apex", function(opts)
 		M.execute_anonymous(opts.line1, opts.line2)
 	end, {
 		range = true, -- Autorise l'utilisation de plages
