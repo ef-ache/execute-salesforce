@@ -16,7 +16,7 @@ Utilisez Lazy.nvim pour installer ce plugin. Voici un exemple de configuration :
 ```lua
 -- Exemple de configuration avec Lazy.nvim
 use {
-  'F-Hameau/execute-salesforce',
+  'ef-ache/execute-salesforce',
 }
 ```
 
