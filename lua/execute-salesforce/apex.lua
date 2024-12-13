@@ -1,25 +1,8 @@
+local utils = require("execute-salesforce.utils")
 local M = {}
 
-function M.show_result(result)
-	local buf = vim.api.nvim_create_buf(false, true)
-	vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(result, "\n"))
-
-	local width = math.floor(vim.o.columns * 0.8)
-	local height = math.floor(vim.o.lines * 0.8)
-	local opts = {
-		relative = "editor",
-		width = width,
-		height = height,
-		col = math.floor((vim.o.columns - width) / 2),
-		row = math.floor((vim.o.lines - height) / 2),
-		style = "minimal",
-		border = "rounded",
-	}
-	vim.api.nvim_open_win(buf, true, opts)
-end
-
 function M.execute_apex(line1, line2)
-	print("starting executing apex")
+	-- print("starting executing apex")
 
 	local bufnr = vim.api.nvim_get_current_buf()
 	local total_lines = vim.api.nvim_buf_line_count(bufnr) -- nombre total de lignes dans le tampon
@@ -48,18 +31,32 @@ function M.execute_apex(line1, line2)
 	end
 
 	local code = table.concat(lines, "\n")
-	local command = 'sfdx force:apex:execute --apexcode "' .. code:gsub('"', '\\"') .. '"'
+	local tmpfile = os.tmpname() .. ".apex"
+	local file = io.open(tmpfile, "w")
+	if not file then
+		print("Erreur lors de la création du fichier temporaire.")
+		return
+	end
+	file:write(code)
+	file:close()
+
+	local command = 'sfdx force:apex:execute --file "' .. tmpfile .. '"'
 	local handle, err = io.popen(command, "r")
 	if not handle then
 		print("Erreur lors de l'exécution de la commande : " .. tostring(err))
+		os.remove(tmpfile)
 		return
 	end
 	local result = handle:read("*a")
 	handle:close()
 
+	os.remove(tmpfile)
+
 	if result then
-		M.show_result(result)
+		utils.show_result(result)
 	else
 		print("Erreur lors de la lecture du résultat.")
 	end
 end
+
+return M

@@ -9,4 +9,5 @@ let s:lua_rocks_deps_loc =  expand("<sfile>:h:r") . "/../lua/execute-salesforce/
 exe "lua package.path = package.path .. ';" . s:lua_rocks_deps_loc . "/lua-?/init.lua'"
 
 " Exposes the plugin's functions for use as commands in Neovim.
-command! -nargs=0 ExecuteApex lua require("execute-salesforce").execute_apex()
+command! -range ExecuteApex <line1>,<line2>lua require("execute-salesforce").execute_apex(<line1>, <line2>)
+command! -range ExecuteSoql <line1>,<line2>lua require("execute-salesforce.soql").execute_soql(<line1>, <line2>)
