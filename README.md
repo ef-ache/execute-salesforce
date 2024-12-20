@@ -14,8 +14,7 @@ Pour utiliser ce plugin, vous devez d'abord installer la CLI Salesforce DX (sfdx
 Utilisez Lazy.nvim pour installer ce plugin. Voici un exemple de configuration :
 
 ```lua
--- Exemple de configuration avec Lazy.nvim
-use {
+{
   'ef-ache/execute-salesforce',
 }
 ```
