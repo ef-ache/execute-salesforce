@@ -143,7 +143,7 @@ local function open_edit_buffer(content, filetype, callback)
   vim.cmd('split')
   vim.api.nvim_win_set_buf(0, buf)
   
-  -- Add instructions
+  -- Add instructions in buffer name only
   vim.api.nvim_buf_set_name(buf, "Edit and Execute (press <CR> to run, <Esc> to cancel)")
   
   -- Set up keymaps
@@ -157,13 +157,6 @@ local function open_edit_buffer(content, filetype, callback)
   vim.keymap.set('n', '<Esc>', function()
     vim.cmd('close')
   end, { buffer = buf, desc = "Cancel execution" })
-  
-  -- Add help text at the top
-  vim.api.nvim_buf_set_lines(buf, 0, 0, false, {
-    "-- Press <CR> to execute, <Esc> to cancel",
-    "-- Edit the code below:",
-    ""
-  })
 end
 
 -- Show history picker with edit option
