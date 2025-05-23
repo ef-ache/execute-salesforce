@@ -63,6 +63,11 @@ function M.execute_apex(start_line, end_line)
     on_stderr = function(_, data, _)
       local error = table.concat(data, "\n")
       if error ~= "" and not error:match("^%s*$") then
+        -- Filter out CLI update warnings
+        if error:match("Warning:.*cli update available") or error:match("›%s+Warning:") then
+          return
+        end
+        
         vim.schedule(function()
           utils.show_error("Apex execution error: " .. error)
         end)

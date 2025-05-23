@@ -24,16 +24,16 @@ local function get_result_buffer(config)
   end
   
   -- Make buffer modifiable before clearing content
-  vim.api.nvim_buf_set_option(result_bufnr, 'modifiable', true)
+  vim.api.nvim_set_option_value('modifiable', true, { buf = result_bufnr })
   
   -- Clear existing content
   vim.api.nvim_buf_set_lines(result_bufnr, 0, -1, false, {})
   
   -- Set buffer options
-  vim.api.nvim_buf_set_option(result_bufnr, 'buftype', 'nofile')
-  vim.api.nvim_buf_set_option(result_bufnr, 'bufhidden', config.reuse_buffer and 'hide' or 'wipe')
-  vim.api.nvim_buf_set_option(result_bufnr, 'swapfile', false)
-  vim.api.nvim_buf_set_option(result_bufnr, 'modifiable', true)
+  vim.api.nvim_set_option_value('buftype', 'nofile', { buf = result_bufnr })
+  vim.api.nvim_set_option_value('bufhidden', config.reuse_buffer and 'hide' or 'wipe', { buf = result_bufnr })
+  vim.api.nvim_set_option_value('swapfile', false, { buf = result_bufnr })
+  vim.api.nvim_set_option_value('modifiable', true, { buf = result_bufnr })
   
   return result_bufnr
 end
@@ -82,10 +82,10 @@ end
 local function apply_syntax_highlighting(bufnr, content)
   -- Detect JSON
   if content:match('^%s*[{[]') then
-    vim.api.nvim_buf_set_option(bufnr, 'filetype', 'json')
+    vim.api.nvim_set_option_value('filetype', 'json', { buf = bufnr })
   -- Detect CSV (simple check for comma-separated header)
   elseif content:match('^[^,]+,[^,]+') then
-    vim.api.nvim_buf_set_option(bufnr, 'filetype', 'csv')
+    vim.api.nvim_set_option_value('filetype', 'csv', { buf = bufnr })
   end
 end
 
@@ -105,7 +105,7 @@ function M.show_result(result, config)
   apply_syntax_highlighting(bufnr, result)
   
   -- Make buffer non-modifiable after setting content
-  vim.api.nvim_buf_set_option(bufnr, 'modifiable', false)
+  vim.api.nvim_set_option_value('modifiable', false, { buf = bufnr })
 end
 
 -- Check if command exists
