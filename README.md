@@ -108,13 +108,24 @@ use {
    :ExecuteSoqlHistory
    ```
 
-8. **Effacer l'historique** :
+8. **Gérer l'historique** (voir et supprimer des éléments individuels) :
+   ```vim
+   :ExecuteManageApexHistory
+   :ExecuteManageSoqlHistory
+   ```
+
+9. **Effacer tout l'historique** :
    ```vim
    :ExecuteClearApexHistory
    :ExecuteClearSoqlHistory
    ```
 
 L'historique est sauvegardé automatiquement dans `~/.local/share/nvim/execute-salesforce/`.
+
+**Options disponibles dans l'historique :**
+- **Execute** : Exécute directement le code/requête
+- **Edit then Execute** : Ouvre un buffer pour modifier avant l'exécution
+- **Delete from History** : Supprime l'élément de l'historique
 
 ### Raccourcis clavier (par défaut)
 

@@ -105,6 +105,23 @@ function M.add_soql(query)
   save_soql_history()
 end
 
+-- Delete individual item from history
+function M.delete_apex_item(index)
+  if index > 0 and index <= #apex_history then
+    table.remove(apex_history, index)
+    save_apex_history()
+    require("execute-salesforce.utils").show_info("Apex history item deleted")
+  end
+end
+
+function M.delete_soql_item(index)
+  if index > 0 and index <= #soql_history then
+    table.remove(soql_history, index)
+    save_soql_history()
+    require("execute-salesforce.utils").show_info("SOQL history item deleted")
+  end
+end
+
 -- Clear history
 function M.clear_apex_history()
   apex_history = {}
@@ -184,13 +201,15 @@ function M.pick_apex(callback, allow_edit)
     -- Check if Tab was pressed (we'll handle this differently)
     if allow_edit then
       -- Show a second prompt for action
-      vim.ui.select({"Execute", "Edit then Execute"}, {
+      vim.ui.select({"Execute", "Edit then Execute", "Delete from History"}, {
         prompt = "Action for selected code:",
       }, function(action)
         if action == "Edit then Execute" then
           open_edit_buffer(choice, "apex", callback)
         elseif action == "Execute" then
           callback(choice)
+        elseif action == "Delete from History" then
+          M.delete_apex_item(idx)
         end
       end)
     else
@@ -222,13 +241,15 @@ function M.pick_soql(callback, allow_edit)
     
     if allow_edit then
       -- Show a second prompt for action
-      vim.ui.select({"Execute", "Edit then Execute"}, {
+      vim.ui.select({"Execute", "Edit then Execute", "Delete from History"}, {
         prompt = "Action for selected query:",
       }, function(action)
         if action == "Edit then Execute" then
           open_edit_buffer(choice, "sql", callback)
         elseif action == "Execute" then
           callback(choice)
+        elseif action == "Delete from History" then
+          M.delete_soql_item(idx)
         end
       end)
     else
@@ -303,6 +324,83 @@ function M.get_history_counts()
     apex = #apex_history,
     soql = #soql_history
   }
+end
+
+-- Manage history (view/delete items)
+function M.manage_apex_history()
+  if #apex_history == 0 then
+    require("execute-salesforce.utils").show_info("No Apex history")
+    return
+  end
+  
+  vim.ui.select(apex_history, {
+    prompt = "Select Apex history item to manage:",
+    format_item = function(item)
+      local preview = item:match("^[^\n]+") or item
+      if #preview > 80 then
+        preview = preview:sub(1, 77) .. "..."
+      end
+      return preview
+    end,
+  }, function(choice, idx)
+    if not choice then
+      return
+    end
+    
+    vim.ui.select({"View", "Delete", "Cancel"}, {
+      prompt = "Action:",
+    }, function(action)
+      if action == "View" then
+        -- Show in a preview buffer
+        local buf = vim.api.nvim_create_buf(false, true)
+        vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(choice, "\n"))
+        vim.api.nvim_set_option_value('buftype', 'nofile', { buf = buf })
+        vim.api.nvim_set_option_value('filetype', 'apex', { buf = buf })
+        vim.cmd('split')
+        vim.api.nvim_win_set_buf(0, buf)
+      elseif action == "Delete" then
+        M.delete_apex_item(idx)
+      end
+    end)
+  end)
+end
+
+function M.manage_soql_history()
+  if #soql_history == 0 then
+    require("execute-salesforce.utils").show_info("No SOQL history")
+    return
+  end
+  
+  vim.ui.select(soql_history, {
+    prompt = "Select SOQL history item to manage:",
+    format_item = function(item)
+      local preview = item:gsub("%s+", " ")
+      if #preview > 80 then
+        preview = preview:sub(1, 77) .. "..."
+      end
+      return preview
+    end,
+  }, function(choice, idx)
+    if not choice then
+      return
+    end
+    
+    vim.ui.select({"View", "Delete", "Cancel"}, {
+      prompt = "Action:",
+    }, function(action)
+      if action == "View" then
+        -- Show in a preview buffer
+        local buf = vim.api.nvim_create_buf(false, true)
+        vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(choice, "\n"))
+        vim.api.nvim_set_option_value('buftype', 'nofile', { buf = buf })
+        vim.api.nvim_set_option_value('filetype', 'sql', { buf = buf })
+        vim.cmd('split')
+        vim.api.nvim_win_set_buf(0, buf)
+      elseif action == "Delete" then
+        M.delete_soql_item(idx)
+      end
+    end)
+  end)
 end
 
 return M

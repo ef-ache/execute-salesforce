@@ -14,6 +14,8 @@ command! ExecuteSoqlHistory lua require("execute-salesforce.history").execute_so
 command! ExecuteHistory lua require("execute-salesforce.history").execute_from_history()
 command! ExecuteClearApexHistory lua require("execute-salesforce.history").clear_apex_history()
 command! ExecuteClearSoqlHistory lua require("execute-salesforce.history").clear_soql_history()
+command! ExecuteManageApexHistory lua require("execute-salesforce.history").manage_apex_history()
+command! ExecuteManageSoqlHistory lua require("execute-salesforce.history").manage_soql_history()
 
 " Setup function for users to configure the plugin
 command! -nargs=? ExecuteSalesforceSetup lua require("execute-salesforce").setup(<q-args> ~= '' and vim.fn.eval(<q-args>) or {})
