@@ -4,12 +4,6 @@ if exists('g:loaded_execute_salesforce') | finish | endif
 let s:save_cpo = &cpo
 set cpo&vim
 
-" Add lua folder to path
-lua << EOF
-local plugin_path = debug.getinfo(1, "S").source:sub(2):match("(.*/)") .. "../lua/?.lua"
-package.path = package.path .. ";" .. plugin_path
-EOF
-
 " Define commands
 command! -range ExecuteApex lua require("execute-salesforce").execute_apex(<line1>, <line2>)
 command! -range ExecuteSoql lua require("execute-salesforce").execute_soql(<line1>, <line2>)
