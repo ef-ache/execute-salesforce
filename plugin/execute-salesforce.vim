@@ -11,6 +11,7 @@ command! -range ExecuteApexOrg lua require("execute-salesforce.org").execute_ape
 command! -range ExecuteSoqlOrg lua require("execute-salesforce.org").execute_soql_with_org(<line1>, <line2>)
 command! ExecuteApexHistory lua require("execute-salesforce.history").execute_apex_from_history()
 command! ExecuteSoqlHistory lua require("execute-salesforce.history").execute_soql_from_history()
+command! ExecuteHistory lua require("execute-salesforce.history").execute_from_history()
 command! ExecuteClearApexHistory lua require("execute-salesforce.history").clear_apex_history()
 command! ExecuteClearSoqlHistory lua require("execute-salesforce.history").clear_soql_history()
 

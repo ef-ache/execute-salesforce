@@ -23,6 +23,9 @@ M.defaults = {
   keymaps = {
     apex = "<leader>sa",
     soql = "<leader>sq",
+    history = "<leader>sh",
+    apex_history = "<leader>sah",
+    soql_history = "<leader>sqh",
   },
   
   -- Show spinner while executing
@@ -39,11 +42,23 @@ function M.setup(opts)
   
   -- Set up keymaps if enabled
   if M.options.keymaps then
+    -- Visual mode keymaps for execution
     if M.options.keymaps.apex then
       vim.keymap.set("v", M.options.keymaps.apex, ":ExecuteApex<CR>", { desc = "Execute Apex" })
     end
     if M.options.keymaps.soql then
       vim.keymap.set("v", M.options.keymaps.soql, ":ExecuteSoql<CR>", { desc = "Execute SOQL" })
+    end
+    
+    -- Normal mode keymaps for history
+    if M.options.keymaps.history then
+      vim.keymap.set("n", M.options.keymaps.history, ":ExecuteHistory<CR>", { desc = "Salesforce History" })
+    end
+    if M.options.keymaps.apex_history then
+      vim.keymap.set("n", M.options.keymaps.apex_history, ":ExecuteApexHistory<CR>", { desc = "Apex History" })
+    end
+    if M.options.keymaps.soql_history then
+      vim.keymap.set("n", M.options.keymaps.soql_history, ":ExecuteSoqlHistory<CR>", { desc = "SOQL History" })
     end
   end
   

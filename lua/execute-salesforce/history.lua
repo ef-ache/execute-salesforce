@@ -285,4 +285,31 @@ function M.execute_soql_from_history()
   end, true) -- Allow editing
 end
 
+-- Unified history command
+function M.execute_from_history()
+  local counts = M.get_history_counts()
+  local choices = {
+    string.format("Apex History (%d items)", counts.apex),
+    string.format("SOQL History (%d items)", counts.soql)
+  }
+  
+  vim.ui.select(choices, {
+    prompt = "Select history type:",
+  }, function(choice)
+    if choice and choice:match("^Apex History") then
+      M.execute_apex_from_history()
+    elseif choice and choice:match("^SOQL History") then
+      M.execute_soql_from_history()
+    end
+  end)
+end
+
+-- Get history counts for display
+function M.get_history_counts()
+  return {
+    apex = #apex_history,
+    soql = #soql_history
+  }
+end
+
 return M

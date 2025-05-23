@@ -90,19 +90,25 @@ use {
 
 ### Historique
 
-5. **Exécuter depuis l'historique Apex** :
+5. **Interface unifiée pour l'historique** :
+   ```vim
+   :ExecuteHistory
+   ```
+   Affiche le nombre d'éléments dans chaque historique et permet de choisir.
+
+6. **Exécuter depuis l'historique Apex** :
    ```vim
    :ExecuteApexHistory
    ```
    - Sélectionnez un élément pour l'exécuter directement
    - Choisissez "Edit then Execute" pour modifier avant l'exécution
 
-6. **Exécuter depuis l'historique SOQL** :
+7. **Exécuter depuis l'historique SOQL** :
    ```vim
    :ExecuteSoqlHistory
    ```
 
-7. **Effacer l'historique** :
+8. **Effacer l'historique** :
    ```vim
    :ExecuteClearApexHistory
    :ExecuteClearSoqlHistory
@@ -115,6 +121,11 @@ L'historique est sauvegardé automatiquement dans `~/.local/share/nvim/execute-s
 En mode visuel :
 - `<leader>sa` - Exécuter le code Apex sélectionné
 - `<leader>sq` - Exécuter la requête SOQL sélectionnée
+
+En mode normal :
+- `<leader>sh` - Ouvrir l'interface d'historique
+- `<leader>sah` - Historique Apex
+- `<leader>sqh` - Historique SOQL
 
 ## Configuration
 
@@ -140,8 +151,11 @@ require('execute-salesforce').setup({
   
   -- Raccourcis (false pour désactiver)
   keymaps = {
-    apex = "<leader>sa",
-    soql = "<leader>sq",
+    apex = "<leader>sa",              -- Mode visuel : exécuter Apex
+    soql = "<leader>sq",              -- Mode visuel : exécuter SOQL
+    history = "<leader>sh",           -- Mode normal : interface d'historique
+    apex_history = "<leader>sah",     -- Mode normal : historique Apex
+    soql_history = "<leader>sqh",     -- Mode normal : historique SOQL
   },
   
   -- Afficher un spinner pendant l'exécution
