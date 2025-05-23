@@ -1,13 +1,27 @@
-if exists("g:loaded_executesalesforce")
-    finish
-endif
-let g:loaded_executesalesforce = 1
+" Prevent loading file twice
+if exists('g:loaded_execute_salesforce') | finish | endif
 
-" Defines a package path for Lua. This facilitates importing the
-" Lua modules from the plugin's dependency directory.
-let s:lua_rocks_deps_loc =  expand("<sfile>:h:r") . "/../lua/execute-salesforce/deps"
-exe "lua package.path = package.path .. ';" . s:lua_rocks_deps_loc . "/lua-?/init.lua'"
+let s:save_cpo = &cpo
+set cpo&vim
 
-" Exposes the plugin's functions for use as commands in Neovim.
-command! -range ExecuteApex <line1>,<line2>lua require("execute-salesforce").execute_apex(<line1>, <line2>)
-command! -range ExecuteSoql <line1>,<line2>lua require("execute-salesforce.soql").execute_soql(<line1>, <line2>)
+" Add lua folder to path
+lua << EOF
+local plugin_path = debug.getinfo(1, "S").source:sub(2):match("(.*/)") .. "../lua/?.lua"
+package.path = package.path .. ";" .. plugin_path
+EOF
+
+" Define commands
+command! -range ExecuteApex lua require("execute-salesforce").execute_apex(<line1>, <line2>)
+command! -range ExecuteSoql lua require("execute-salesforce").execute_soql(<line1>, <line2>)
+command! -range ExecuteApexOrg lua require("execute-salesforce.org").execute_apex_with_org(<line1>, <line2>)
+command! -range ExecuteSoqlOrg lua require("execute-salesforce.org").execute_soql_with_org(<line1>, <line2>)
+command! ExecuteApexHistory lua require("execute-salesforce.history").execute_apex_from_history()
+command! ExecuteSoqlHistory lua require("execute-salesforce.history").execute_soql_from_history()
+
+" Setup function for users to configure the plugin
+command! -nargs=? ExecuteSalesforceSetup lua require("execute-salesforce").setup(<args>)
+
+let &cpo = s:save_cpo
+unlet s:save_cpo
+
+let g:loaded_execute_salesforce = 1

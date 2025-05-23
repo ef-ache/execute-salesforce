@@ -1,62 +1,76 @@
-local utils = require("execute-salesforce.utils")
 local M = {}
+local utils = require("execute-salesforce.utils")
 
-function M.execute_apex(line1, line2)
-	-- print("starting executing apex")
-
-	local bufnr = vim.api.nvim_get_current_buf()
-	local total_lines = vim.api.nvim_buf_line_count(bufnr) -- nombre total de lignes dans le tampon
-
-	-- Vérifier que les lignes demandées sont valides
-	if line1 < 1 or line2 > total_lines then
-		print("Erreur : les numéros de ligne sont hors des limites du tampon.")
-		return
-	end
-
-	-- Ajuster les indices pour Vim (indices de ligne sont basés sur 0, mais line1 et line2 sont probablement 1-based)
-	line1 = line1 - 1 -- Convertir line1 de 1-based à 0-based
-	line2 = line2 - 1 -- Convertir line2 de 1-based à 0-based
-
-	-- Vérifier que line1 <= line2
-	if line1 > line2 then
-		print("Erreur : line1 doit être inférieur ou égal à line2.")
-		return
-	end
-
-	local lines = vim.api.nvim_buf_get_lines(bufnr, line1, line2 + 1, false) -- +1 car line2 est inclus dans l'intervalle
-
-	if #lines == 0 then
-		print("Aucun code à exécuter.")
-		return
-	end
-
-	local code = table.concat(lines, "\n")
-	local tmpfile = os.tmpname() .. ".apex"
-	local file = io.open(tmpfile, "w")
-	if not file then
-		print("Erreur lors de la création du fichier temporaire.")
-		return
-	end
-	file:write(code)
-	file:close()
-
-	local command = 'sfdx force:apex:execute --file "' .. tmpfile .. '"'
-	local handle, err = io.popen(command, "r")
-	if not handle then
-		print("Erreur lors de l'exécution de la commande : " .. tostring(err))
-		os.remove(tmpfile)
-		return
-	end
-	local result = handle:read("*a")
-	handle:close()
-
-	os.remove(tmpfile)
-
-	if result then
-		utils.show_result(result)
-	else
-		print("Erreur lors de la lecture du résultat.")
-	end
+function M.execute_apex(start_line, end_line)
+  local config = require('execute-salesforce.config').get()
+  
+  -- Check for CLI
+  local cli = utils.get_cli_command(config)
+  if not cli then
+    utils.show_error("Salesforce CLI not found. Please install 'sf' or 'sfdx'.")
+    return
+  end
+  
+  -- Get selected lines
+  local lines = vim.api.nvim_buf_get_lines(0, start_line - 1, end_line, false)
+  if #lines == 0 then
+    utils.show_error("No code selected")
+    return
+  end
+  
+  -- Add to history
+  local code = table.concat(lines, "\n")
+  require("execute-salesforce.history").add_apex(code)
+  
+  -- Create temporary file
+  local tmpfile = os.tmpname() .. ".apex"
+  local file = io.open(tmpfile, "w")
+  if not file then
+    utils.show_error("Failed to create temporary file")
+    return
+  end
+  
+  file:write(table.concat(lines, "\n"))
+  file:close()
+  
+  -- Build command
+  local base_cmd = cli .. " force:apex:execute --file " .. tmpfile
+  if cli == "sf" then
+    base_cmd = cli .. " apex run --file " .. tmpfile
+  end
+  local cmd = utils.build_command(base_cmd, config)
+  
+  -- Execute asynchronously
+  utils.start_spinner("Executing Apex code...")
+  
+  vim.fn.jobstart(cmd, {
+    on_exit = function(_, exit_code, _)
+      utils.stop_spinner()
+      os.remove(tmpfile)
+      
+      if exit_code ~= 0 then
+        utils.show_error("Apex execution failed with exit code: " .. exit_code)
+      end
+    end,
+    on_stdout = function(_, data, _)
+      local result = table.concat(data, "\n")
+      if result ~= "" then
+        vim.schedule(function()
+          utils.show_result(result, config)
+        end)
+      end
+    end,
+    on_stderr = function(_, data, _)
+      local error = table.concat(data, "\n")
+      if error ~= "" and not error:match("^%s*$") then
+        vim.schedule(function()
+          utils.show_error("Apex execution error: " .. error)
+        end)
+      end
+    end,
+    stdout_buffered = true,
+    stderr_buffered = true,
+  })
 end
 
 return M
