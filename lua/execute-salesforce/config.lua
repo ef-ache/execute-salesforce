@@ -26,6 +26,9 @@ M.defaults = {
     history = "<leader>sh",
     apex_history = "<leader>sah",
     soql_history = "<leader>sqh",
+    quick = "<leader>se",
+    quick_apex = "<leader>sea",
+    quick_soql = "<leader>seq",
   },
   
   -- Show spinner while executing
@@ -59,6 +62,17 @@ function M.setup(opts)
     end
     if M.options.keymaps.soql_history then
       vim.keymap.set("n", M.options.keymaps.soql_history, ":ExecuteSoqlHistory<CR>", { desc = "SOQL History" })
+    end
+    
+    -- Normal mode keymaps for quick execute
+    if M.options.keymaps.quick then
+      vim.keymap.set("n", M.options.keymaps.quick, ":ExecuteQuick<CR>", { desc = "Quick Execute" })
+    end
+    if M.options.keymaps.quick_apex then
+      vim.keymap.set("n", M.options.keymaps.quick_apex, ":ExecuteQuickApex<CR>", { desc = "Quick Apex" })
+    end
+    if M.options.keymaps.quick_soql then
+      vim.keymap.set("n", M.options.keymaps.quick_soql, ":ExecuteQuickSoql<CR>", { desc = "Quick SOQL" })
     end
   end
   

@@ -76,45 +76,65 @@ use {
    :ExecuteSoql
    ```
 
+### Exécution rapide (sans sélection)
+
+3. **Exécution rapide avec choix du type** :
+   ```vim
+   :ExecuteQuick
+   ```
+   Ouvre un prompt pour choisir entre Apex et SOQL, puis un buffer pour saisir le code.
+
+4. **Exécution rapide Apex** :
+   ```vim
+   :ExecuteQuickApex
+   ```
+   Ouvre directement un buffer pour saisir du code Apex.
+
+5. **Exécution rapide SOQL** :
+   ```vim
+   :ExecuteQuickSoql
+   ```
+   Ouvre directement un buffer pour saisir une requête SOQL.
+
 ### Commandes avec sélection d'org
 
-3. **Apex avec choix de l'org** :
+6. **Apex avec choix de l'org** :
    ```vim
    :ExecuteApexOrg
    ```
 
-4. **SOQL avec choix de l'org** :
+7. **SOQL avec choix de l'org** :
    ```vim
    :ExecuteSoqlOrg
    ```
 
 ### Historique
 
-5. **Interface unifiée pour l'historique** :
+8. **Interface unifiée pour l'historique** :
    ```vim
    :ExecuteHistory
    ```
    Affiche le nombre d'éléments dans chaque historique et permet de choisir.
 
-6. **Exécuter depuis l'historique Apex** :
+9. **Exécuter depuis l'historique Apex** :
    ```vim
    :ExecuteApexHistory
    ```
    - Sélectionnez un élément pour l'exécuter directement
    - Choisissez "Edit then Execute" pour modifier avant l'exécution
 
-7. **Exécuter depuis l'historique SOQL** :
-   ```vim
-   :ExecuteSoqlHistory
-   ```
+10. **Exécuter depuis l'historique SOQL** :
+    ```vim
+    :ExecuteSoqlHistory
+    ```
 
-8. **Gérer l'historique** (voir et supprimer des éléments individuels) :
-   ```vim
-   :ExecuteManageApexHistory
-   :ExecuteManageSoqlHistory
-   ```
+11. **Gérer l'historique** (voir et supprimer des éléments individuels) :
+    ```vim
+    :ExecuteManageApexHistory
+    :ExecuteManageSoqlHistory
+    ```
 
-9. **Effacer tout l'historique** :
+12. **Effacer tout l'historique** :
    ```vim
    :ExecuteClearApexHistory
    :ExecuteClearSoqlHistory
@@ -137,6 +157,9 @@ En mode normal :
 - `<leader>sh` - Ouvrir l'interface d'historique
 - `<leader>sah` - Historique Apex
 - `<leader>sqh` - Historique SOQL
+- `<leader>se` - Exécution rapide (choix du type)
+- `<leader>sea` - Exécution rapide Apex
+- `<leader>seq` - Exécution rapide SOQL
 
 ## Configuration
 
@@ -167,6 +190,9 @@ require('execute-salesforce').setup({
     history = "<leader>sh",           -- Mode normal : interface d'historique
     apex_history = "<leader>sah",     -- Mode normal : historique Apex
     soql_history = "<leader>sqh",     -- Mode normal : historique SOQL
+    quick = "<leader>se",             -- Mode normal : exécution rapide
+    quick_apex = "<leader>sea",       -- Mode normal : exécution rapide Apex
+    quick_soql = "<leader>seq",       -- Mode normal : exécution rapide SOQL
   },
   
   -- Afficher un spinner pendant l'exécution
