@@ -32,7 +32,7 @@ M.defaults = {
   use_sf_cli = true,
 }
 
-M.options = {}
+M.options = vim.deepcopy(M.defaults)
 
 function M.setup(opts)
   M.options = vim.tbl_deep_extend("force", M.defaults, opts or {})
@@ -46,6 +46,9 @@ function M.setup(opts)
       vim.keymap.set("v", M.options.keymaps.soql, ":ExecuteSoql<CR>", { desc = "Execute SOQL" })
     end
   end
+  
+  -- Confirm setup was called
+  vim.notify("Execute Salesforce configured successfully", vim.log.levels.INFO, { title = "Execute Salesforce" })
 end
 
 function M.get()

@@ -13,7 +13,7 @@ command! ExecuteApexHistory lua require("execute-salesforce.history").execute_ap
 command! ExecuteSoqlHistory lua require("execute-salesforce.history").execute_soql_from_history()
 
 " Setup function for users to configure the plugin
-command! -nargs=? ExecuteSalesforceSetup lua require("execute-salesforce").setup(<args>)
+command! -nargs=? ExecuteSalesforceSetup lua require("execute-salesforce").setup(<q-args> ~= '' and vim.fn.eval(<q-args>) or {})
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
