@@ -23,6 +23,9 @@ local function get_result_buffer(config)
     vim.api.nvim_buf_set_name(result_bufnr, config.result_buffer_name)
   end
   
+  -- Make buffer modifiable before clearing content
+  vim.api.nvim_buf_set_option(result_bufnr, 'modifiable', true)
+  
   -- Clear existing content
   vim.api.nvim_buf_set_lines(result_bufnr, 0, -1, false, {})
   
