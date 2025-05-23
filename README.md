@@ -9,6 +9,7 @@ Un plugin Neovim pour exécuter du code Apex anonyme ou des requêtes SOQL direc
 - 🔄 Réutilisation du buffer de résultats
 - 🌐 Support multi-org avec sélection interactive
 - ⚡ Support des CLI `sf` (nouveau) et `sfdx` (legacy)
+- 📝 Historique persistant avec édition avant exécution
 - 🛠️ Configuration flexible
 - 🔔 Messages d'erreur clairs et détaillés
 - ⌨️ Raccourcis clavier personnalisables
@@ -86,6 +87,28 @@ use {
    ```vim
    :ExecuteSoqlOrg
    ```
+
+### Historique
+
+5. **Exécuter depuis l'historique Apex** :
+   ```vim
+   :ExecuteApexHistory
+   ```
+   - Sélectionnez un élément pour l'exécuter directement
+   - Choisissez "Edit then Execute" pour modifier avant l'exécution
+
+6. **Exécuter depuis l'historique SOQL** :
+   ```vim
+   :ExecuteSoqlHistory
+   ```
+
+7. **Effacer l'historique** :
+   ```vim
+   :ExecuteClearApexHistory
+   :ExecuteClearSoqlHistory
+   ```
+
+L'historique est sauvegardé automatiquement dans `~/.local/share/nvim/execute-salesforce/`.
 
 ### Raccourcis clavier (par défaut)
 

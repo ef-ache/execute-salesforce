@@ -5,6 +5,65 @@ local apex_history = {}
 local soql_history = {}
 local max_history = 50
 
+-- Get data directory
+local function get_data_dir()
+  local data_dir = vim.fn.stdpath("data") .. "/execute-salesforce"
+  vim.fn.mkdir(data_dir, "p")
+  return data_dir
+end
+
+-- Get history file paths
+local function get_apex_history_file()
+  return get_data_dir() .. "/apex_history.json"
+end
+
+local function get_soql_history_file()
+  return get_data_dir() .. "/soql_history.json"
+end
+
+-- Load history from disk
+local function load_history()
+  -- Load Apex history
+  local apex_file = get_apex_history_file()
+  if vim.fn.filereadable(apex_file) == 1 then
+    local content = vim.fn.readfile(apex_file)
+    if #content > 0 then
+      local ok, data = pcall(vim.fn.json_decode, table.concat(content, "\n"))
+      if ok and type(data) == "table" then
+        apex_history = data
+      end
+    end
+  end
+  
+  -- Load SOQL history
+  local soql_file = get_soql_history_file()
+  if vim.fn.filereadable(soql_file) == 1 then
+    local content = vim.fn.readfile(soql_file)
+    if #content > 0 then
+      local ok, data = pcall(vim.fn.json_decode, table.concat(content, "\n"))
+      if ok and type(data) == "table" then
+        soql_history = data
+      end
+    end
+  end
+end
+
+-- Save history to disk
+local function save_apex_history()
+  local file = get_apex_history_file()
+  local content = vim.fn.json_encode(apex_history)
+  vim.fn.writefile({content}, file)
+end
+
+local function save_soql_history()
+  local file = get_soql_history_file()
+  local content = vim.fn.json_encode(soql_history)
+  vim.fn.writefile({content}, file)
+end
+
+-- Initialize - load history on startup
+load_history()
+
 -- Add to history
 function M.add_apex(code)
   -- Don't add duplicates
@@ -21,6 +80,9 @@ function M.add_apex(code)
   if #apex_history > max_history then
     table.remove(apex_history)
   end
+  
+  -- Save to disk
+  save_apex_history()
 end
 
 function M.add_soql(query)
@@ -38,6 +100,22 @@ function M.add_soql(query)
   if #soql_history > max_history then
     table.remove(soql_history)
   end
+  
+  -- Save to disk
+  save_soql_history()
+end
+
+-- Clear history
+function M.clear_apex_history()
+  apex_history = {}
+  save_apex_history()
+  require("execute-salesforce.utils").show_info("Apex history cleared")
+end
+
+function M.clear_soql_history()
+  soql_history = {}
+  save_soql_history()
+  require("execute-salesforce.utils").show_info("SOQL history cleared")
 end
 
 -- Get history
@@ -49,15 +127,54 @@ function M.get_soql_history()
   return soql_history
 end
 
--- Show history picker
-function M.pick_apex(callback)
+-- Open buffer for editing
+local function open_edit_buffer(content, filetype, callback)
+  -- Create a new buffer
+  local buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(content, "\n"))
+  
+  -- Set buffer options
+  vim.api.nvim_set_option_value('buftype', 'nofile', { buf = buf })
+  vim.api.nvim_set_option_value('bufhidden', 'wipe', { buf = buf })
+  vim.api.nvim_set_option_value('swapfile', false, { buf = buf })
+  vim.api.nvim_set_option_value('filetype', filetype, { buf = buf })
+  
+  -- Open in a split
+  vim.cmd('split')
+  vim.api.nvim_win_set_buf(0, buf)
+  
+  -- Add instructions
+  vim.api.nvim_buf_set_name(buf, "Edit and Execute (press <CR> to run, <Esc> to cancel)")
+  
+  -- Set up keymaps
+  vim.keymap.set('n', '<CR>', function()
+    local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+    local edited_content = table.concat(lines, "\n")
+    vim.cmd('close')
+    callback(edited_content)
+  end, { buffer = buf, desc = "Execute edited code" })
+  
+  vim.keymap.set('n', '<Esc>', function()
+    vim.cmd('close')
+  end, { buffer = buf, desc = "Cancel execution" })
+  
+  -- Add help text at the top
+  vim.api.nvim_buf_set_lines(buf, 0, 0, false, {
+    "-- Press <CR> to execute, <Esc> to cancel",
+    "-- Edit the code below:",
+    ""
+  })
+end
+
+-- Show history picker with edit option
+function M.pick_apex(callback, allow_edit)
   if #apex_history == 0 then
     require("execute-salesforce.utils").show_info("No Apex history")
     return
   end
   
   vim.ui.select(apex_history, {
-    prompt = "Select Apex code from history:",
+    prompt = "Select Apex code from history (press <Tab> to edit):",
     format_item = function(item)
       -- Show first line or up to 80 chars
       local preview = item:match("^[^\n]+") or item
@@ -66,14 +183,30 @@ function M.pick_apex(callback)
       end
       return preview
     end,
-  }, function(choice)
-    if choice then
+  }, function(choice, idx)
+    if not choice then
+      return
+    end
+    
+    -- Check if Tab was pressed (we'll handle this differently)
+    if allow_edit then
+      -- Show a second prompt for action
+      vim.ui.select({"Execute", "Edit then Execute"}, {
+        prompt = "Action for selected code:",
+      }, function(action)
+        if action == "Edit then Execute" then
+          open_edit_buffer(choice, "apex", callback)
+        elseif action == "Execute" then
+          callback(choice)
+        end
+      end)
+    else
       callback(choice)
     end
   end)
 end
 
-function M.pick_soql(callback)
+function M.pick_soql(callback, allow_edit)
   if #soql_history == 0 then
     require("execute-salesforce.utils").show_info("No SOQL history")
     return
@@ -89,8 +222,23 @@ function M.pick_soql(callback)
       end
       return preview
     end,
-  }, function(choice)
-    if choice then
+  }, function(choice, idx)
+    if not choice then
+      return
+    end
+    
+    if allow_edit then
+      -- Show a second prompt for action
+      vim.ui.select({"Execute", "Edit then Execute"}, {
+        prompt = "Action for selected query:",
+      }, function(action)
+        if action == "Edit then Execute" then
+          open_edit_buffer(choice, "sql", callback)
+        elseif action == "Execute" then
+          callback(choice)
+        end
+      end)
+    else
       callback(choice)
     end
   end)
@@ -114,7 +262,7 @@ function M.execute_apex_from_history()
         vim.api.nvim_buf_delete(buf, { force = true })
       end
     end, 100)
-  end)
+  end, true) -- Allow editing
 end
 
 function M.execute_soql_from_history()
@@ -134,7 +282,7 @@ function M.execute_soql_from_history()
         vim.api.nvim_buf_delete(buf, { force = true })
       end
     end, 100)
-  end)
+  end, true) -- Allow editing
 end
 
 return M
