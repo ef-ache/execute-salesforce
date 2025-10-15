@@ -51,8 +51,8 @@ function M.execute_apex(start_line, end_line)
   end
   log_cmd = utils.build_command(log_cmd, config)
 
-  -- Combine: execute then get log
-  cmd = cmd .. " && " .. log_cmd
+  -- Combine: execute, separator, then get log
+  cmd = cmd .. " && echo '\n\n=== DEBUG LOGS ===' && " .. log_cmd
   
   -- Execute asynchronously
   utils.start_spinner("Executing Apex code...")
