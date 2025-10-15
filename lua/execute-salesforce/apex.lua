@@ -34,9 +34,9 @@ function M.execute_apex(start_line, end_line)
   file:close()
   
   -- Build command
-  local base_cmd = cli .. " force:apex:execute --file " .. tmpfile
+  local base_cmd = cli .. " force:apex:execute --file " .. tmpfile .. " --loglevel debug"
   if cli == "sf" then
-    base_cmd = cli .. " apex run --file " .. tmpfile
+    base_cmd = cli .. " apex run --file " .. tmpfile .. " --log-level debug"
   end
   local cmd = utils.build_command(base_cmd, config)
   
