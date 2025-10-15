@@ -33,12 +33,26 @@ function M.execute_apex(start_line, end_line)
   file:write(table.concat(lines, "\n"))
   file:close()
   
-  -- Build command
-  local base_cmd = cli .. " force:apex:execute --file " .. tmpfile .. " --loglevel debug"
+  -- Build command with pipe to get logs
+  local base_cmd
   if cli == "sf" then
-    base_cmd = cli .. " apex run --file " .. tmpfile .. " --log-level debug"
+    base_cmd = cli .. " apex run --file " .. tmpfile
+  else
+    base_cmd = cli .. " force:apex:execute --file " .. tmpfile
   end
   local cmd = utils.build_command(base_cmd, config)
+
+  -- Add log retrieval command (get last log after execution)
+  local log_cmd
+  if cli == "sf" then
+    log_cmd = cli .. " apex get log --number 1"
+  else
+    log_cmd = cli .. " force:apex:log:get --number 1"
+  end
+  log_cmd = utils.build_command(log_cmd, config)
+
+  -- Combine: execute then get log
+  cmd = cmd .. " && " .. log_cmd
   
   -- Execute asynchronously
   utils.start_spinner("Executing Apex code...")
