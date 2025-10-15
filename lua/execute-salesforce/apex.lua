@@ -42,39 +42,61 @@ function M.execute_apex(start_line, end_line)
   
   -- Execute asynchronously
   utils.start_spinner("Executing Apex code...")
-  
+
+  local stdout_data = {}
+  local stderr_data = {}
+
   vim.fn.jobstart(cmd, {
     on_exit = function(_, exit_code, _)
       utils.stop_spinner()
       os.remove(tmpfile)
-      
+
+      local stdout_result = table.concat(stdout_data, "\n")
+      local stderr_result = table.concat(stderr_data, "\n")
+
+      -- Filter out CLI update warnings from stderr
+      stderr_result = stderr_result:gsub("Warning:.-cli update available[^\n]*\n?", "")
+      stderr_result = stderr_result:gsub("›%s+Warning:[^\n]*\n?", "")
+      stderr_result = stderr_result:gsub("^%s+", ""):gsub("%s+$", "")
+
       if exit_code ~= 0 then
-        utils.show_error("Apex execution failed with exit code: " .. exit_code)
+        -- Show error logs in buffer
+        local error_output = "=== Apex Execution Failed (exit code: " .. exit_code .. ") ===\n\n"
+
+        if stderr_result ~= "" then
+          error_output = error_output .. "STDERR:\n" .. stderr_result .. "\n\n"
+        end
+
+        if stdout_result ~= "" then
+          error_output = error_output .. "STDOUT:\n" .. stdout_result
+        end
+
+        vim.schedule(function()
+          utils.show_result(error_output, config)
+        end)
+      elseif stdout_result ~= "" then
+        -- Show successful result
+        vim.schedule(function()
+          utils.show_result(stdout_result, config)
+        end)
       end
     end,
     on_stdout = function(_, data, _)
-      local result = table.concat(data, "\n")
-      if result ~= "" then
-        vim.schedule(function()
-          utils.show_result(result, config)
-        end)
+      for _, line in ipairs(data) do
+        if line ~= "" then
+          table.insert(stdout_data, line)
+        end
       end
     end,
     on_stderr = function(_, data, _)
-      local error = table.concat(data, "\n")
-      if error ~= "" and not error:match("^%s*$") then
-        -- Filter out CLI update warnings
-        if error:match("Warning:.*cli update available") or error:match("›%s+Warning:") then
-          return
+      for _, line in ipairs(data) do
+        if line ~= "" then
+          table.insert(stderr_data, line)
         end
-        
-        vim.schedule(function()
-          utils.show_error("Apex execution error: " .. error)
-        end)
       end
     end,
-    stdout_buffered = true,
-    stderr_buffered = true,
+    stdout_buffered = false,
+    stderr_buffered = false,
   })
 end
 
