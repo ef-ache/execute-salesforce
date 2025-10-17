@@ -134,7 +134,7 @@ function M.build_command(base_cmd, config)
   end
   
   -- Add output format for SOQL
-  if base_cmd:match('soql:query') or base_cmd:match('data:query') then
+  if base_cmd:match('soql:query') or base_cmd:match('data query') then
     if config.output_format == 'csv' then
       cmd = cmd .. ' --result-format csv'
     elseif config.output_format == 'table' then
